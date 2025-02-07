@@ -9,23 +9,36 @@ import SwiftUI
 import Combine
 
 struct DetailView: View {
-    let image: FlickrImageModel
+    let viewModel: ImageDetailViewModel
     
     var body: some View {
-        VStack {
-            AsyncImage(url: URL(string: image.media.m)) { image in
-                image.resizable().scaledToFit()
-            } placeholder: {
-                ProgressView()
+        ScrollView {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(viewModel.title)
+                    .font(.title)
+                
+                AsyncImage(url: URL(string: viewModel.image.media.m)) { image in
+                    image.resizable().scaledToFit()
+                } placeholder: {
+                    ProgressView()
+                }
+                .frame(maxHeight: 300)
+                
+                Text(viewModel.description)
+                    .font(.body)
+                
+                Text(viewModel.author)
+                    .font(.body)
+                
+                Text(viewModel.publishedDate)
+                    .font(.body)
+                
+                Text(viewModel.dimension)
+                    .font(.body)
             }
-            .frame(maxHeight: 300)
-            
-            Text(image.title).font(.headline).padding()
-            Text(image.author).font(.subheadline).padding()
-            Text(image.published).font(.caption).padding()
-            Text(image.description).font(.body).padding()
+            .padding()
         }
-        .navigationTitle("Image Detail")
-        .padding()
     }
+    
+    
 }

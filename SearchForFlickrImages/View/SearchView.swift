@@ -31,7 +31,7 @@ struct SearchView: View {
         ScrollView {
             LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 10) {
                 ForEach(viewModel.images) { image in
-                    NavigationLink(destination: DetailView(image: image)) {
+                    NavigationLink(destination: DetailView(viewModel: ImageDetailViewModel(image: image))) {
                         AsyncImage(url: URL(string: image.media.m)) { image in
                             image.resizable().scaledToFit()
                         } placeholder: {
