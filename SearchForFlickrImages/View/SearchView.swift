@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct SearchView: View {
-    @StateObject private var viewModel = FlickrImageVIewModel()
+    @StateObject private var viewModel = FlickrImageViewModel()
     
     var body: some View {
         NavigationView {
@@ -18,27 +18,36 @@ struct SearchView: View {
                     .padding()
                 
                 if viewModel.isLoading {
-                    ProgressView()
-                }
-                
-                ScrollView {
-                    LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 10) {
-                        ForEach(viewModel.photos) { photo in
-                            NavigationLink(destination: DetailView(photo: photo)) {
-                                AsyncImage(url: URL(string: photo.media.m)) { image in
-                                    image.resizable().scaledToFit()
-                                } placeholder: {
-                                    ProgressView()
-                                }
-                                .frame(height: 100)
-                            }
-                        }
-                    }
-                    .padding()
+                    progressView
+                } else {
+                    imagesCollectionView
                 }
             }
-            .navigationTitle("Flickr Search")
+            .navigationTitle("Search for Flickr images")
         }
+    }
+    
+    var imagesCollectionView: some View {
+        ScrollView {
+            LazyVGrid(columns: Array(repeating: .init(.flexible()), count: 3), spacing: 10) {
+                ForEach(viewModel.images) { image in
+                    NavigationLink(destination: DetailView(image: image)) {
+                        AsyncImage(url: URL(string: image.media.m)) { image in
+                            image.resizable().scaledToFit()
+                        } placeholder: {
+                            ProgressView()
+                        }
+                        .frame(height: 100)
+                    }
+                }
+            }
+            .padding()
+        }
+    }
+    
+    var progressView: some View {
+        ProgressView("Loading...")
+            .padding()
     }
 }
 

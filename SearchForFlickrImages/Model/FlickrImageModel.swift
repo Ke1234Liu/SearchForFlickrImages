@@ -20,6 +20,6 @@ struct FlickrImageModel: Codable, Identifiable {
     }
 }
 
-struct FlickrResponse: Codable {
+struct FlickrImageResponse: Codable {
     let items: [FlickrImageModel]
 }

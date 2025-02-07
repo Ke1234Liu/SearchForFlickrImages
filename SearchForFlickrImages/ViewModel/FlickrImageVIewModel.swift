@@ -1,5 +1,5 @@
 //
-//  FlickrImageVIewModel.swift
+//  FlickrImageViewModel.swift
 //  SearchForFlickrImages
 //
 //  Created by Ke Liu on 2/6/25.
@@ -8,40 +8,44 @@
 import Foundation
 import Combine
 
-class FlickrImageVIewModel: ObservableObject {
+@MainActor
+class FlickrImageViewModel: ObservableObject {
+    
     @Published var searchText = ""
-    @Published var photos: [FlickrImageModel] = []
+    @Published var images: [FlickrImageModel] = []
     @Published var isLoading = false
     
     private var cancellables = Set<AnyCancellable>()
     
-    init() {
+    let flickrService: FlickrService
+    
+    init(flickrService: FlickrService = FlickrService()) {
+        self.flickrService = flickrService
+        
         $searchText
-            .debounce(for: .milliseconds(500), scheduler: RunLoop.main)
-            .removeDuplicates()
+            .debounce(for: .milliseconds(500), scheduler: DispatchQueue.main)
             .sink { [weak self] text in
-                self?.fetchPhotos(query: text)
+                self?.fetchImages(tags: text)
             }
             .store(in: &cancellables)
     }
     
-    func fetchPhotos(query: String) {
-        guard !query.isEmpty else {
-            photos = []
+    func fetchImages(tags: String) {
+        guard !tags.isEmpty else {
+            images = []
             return
         }
-        
+
         isLoading = true
-        let urlString = "https://api.flickr.com/services/feeds/photos_public.gne?format=json&nojsoncallback=1&tags=\(query)"
-        guard let url = URL(string: urlString) else { return }
-        
-        URLSession.shared.dataTaskPublisher(for: url)
-            .map { $0.data }
-            .decode(type: FlickrResponse.self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in self.isLoading = false }, receiveValue: { response in
-                self.photos = response.items
-            })
-            .store(in: &cancellables)
+
+        Task {
+            do {
+                let images = try await flickrService.fetchImages(for: tags)
+                self.isLoading = false
+                self.images = images
+            } catch {
+                self.isLoading = false
+            }
+        }
     }
 }
